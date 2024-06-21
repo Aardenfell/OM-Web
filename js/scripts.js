@@ -6,14 +6,9 @@ const timers = [
         resetTime: '13:00' // Reset time in 24-hour format
     },
     {
-        name: 'Beast Invasion p1',
+        name: 'Beast Invasion',
         interval: 'daily', // Daily timer
-        resetTime: '17:00' // Reset time in 24-hour format
-    },
-    {
-        name: 'Beast Invasion p2',
-        interval: 'daily', // Daily timer
-        resetTime: '23:00' // Reset time in 24-hour format
+        resetTime: ['17:00', '23:00'] // Reset time in 24-hour format
     },
     {
         name: 'Weekly Event A',
@@ -134,16 +129,32 @@ function displayTimers() {
         const timerDetails = document.createElement('p'); // Create timer details element
         let resetText; // Initialize reset text variable
         if (timer.interval === 'daily') { // Daily timer
-            const resetTimeInUserTimezone = convertUTCToUserTimezone(timer.resetTime); // Convert UTC reset time to user's timezone
-            resetText = `Resets daily at ${resetTimeInUserTimezone}`; // Set reset text
-            timerDetails.textContent = resetText; // Set timer details text
-            timerDiv.appendChild(timerDetails); // Append timer details to timer div
+            if (Array.isArray(timer.resetTime)) {
+                timer.resetTime.forEach(time => {
+                    const resetTimeInUserTimezone = convertUTCToUserTimezone(time); // Convert UTC reset time to user's timezone
+                    resetText = `Resets daily at ${resetTimeInUserTimezone}`; // Set reset text
+                    const timerDetailsInstance = document.createElement('p'); // Create a new instance of timer details
+                    timerDetailsInstance.textContent = resetText; // Set timer details text
+                    timerDiv.appendChild(timerDetailsInstance); // Append timer details to timer div
 
-            const remainingTime = calculateRemainingTime(new Date(), convertUTCToUserTimezone(timer.resetTime)); // Calculate remaining time in user's timezone
-            const timerRemaining = document.createElement('p'); // Create timer remaining element
-            timerRemaining.textContent = `Time remaining: ${remainingTime}`; // Set timer remaining text
-            timerRemaining.className = 'text-muted'; // Add Bootstrap class for muted text
-            timerDiv.appendChild(timerRemaining); // Append timer remaining to timer div
+                    const remainingTime = calculateRemainingTime(new Date(), convertUTCToUserTimezone(time)); // Calculate remaining time in user's timezone
+                    const timerRemaining = document.createElement('p'); // Create timer remaining element
+                    timerRemaining.textContent = `Time remaining: ${remainingTime}`; // Set timer remaining text
+                    timerRemaining.className = 'text-muted'; // Add Bootstrap class for muted text
+                    timerDiv.appendChild(timerRemaining); // Append timer remaining to timer div
+                });
+            } else {
+                const resetTimeInUserTimezone = convertUTCToUserTimezone(timer.resetTime); // Convert UTC reset time to user's timezone
+                resetText = `Resets daily at ${resetTimeInUserTimezone}`; // Set reset text
+                timerDetails.textContent = resetText; // Set timer details text
+                timerDiv.appendChild(timerDetails); // Append timer details to timer div
+
+                const remainingTime = calculateRemainingTime(new Date(), convertUTCToUserTimezone(timer.resetTime)); // Calculate remaining time in user's timezone
+                const timerRemaining = document.createElement('p'); // Create timer remaining element
+                timerRemaining.textContent = `Time remaining: ${remainingTime}`; // Set timer remaining text
+                timerRemaining.className = 'text-muted'; // Add Bootstrap class for muted text
+                timerDiv.appendChild(timerRemaining); // Append timer remaining to timer div
+            }
         } else if (timer.interval === 'weekly') { // Weekly timer
             const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; // Days of the week
             const resetTimeInUserTimezone = convertUTCToUserTimezone(timer.resetTime); // Convert UTC reset time to user's timezone
@@ -161,6 +172,7 @@ function displayTimers() {
         container.appendChild(timerDiv); // Append timer div to container
     });
 }
+
 
 // Function to update timers every second
 function updateTimers() {
