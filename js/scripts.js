@@ -1,9 +1,19 @@
 // Timer data
 const timers = [
     {
-        name: 'Daily Reset',
+        name: 'Pills Reset',
         interval: 'daily', // Daily timer
-        resetTime: '00:00' // Reset time in 24-hour format
+        resetTime: '13:00' // Reset time in 24-hour format
+    },
+    {
+        name: 'Beast Invasion p1',
+        interval: 'daily', // Daily timer
+        resetTime: '17:00' // Reset time in 24-hour format
+    },
+    {
+        name: 'Beast Invasion p2',
+        interval: 'daily', // Daily timer
+        resetTime: '23:00' // Reset time in 24-hour format
     },
     {
         name: 'Weekly Event A',
@@ -20,39 +30,93 @@ const timers = [
     // Add more timers as needed
 ];
 
-// Function to calculate the remaining time until the next reset
-function calculateRemainingTime(resetTime, resetDay = null) {
-    const now = new Date(); // Current date and time
-    let resetDate = new Date(); // Reset date and time
+// Function to update and display current time
+function updateCurrentTime() {
+    const now = new Date();
+    const currentTimeElement = document.getElementById('current-time');
+    currentTimeElement.textContent = `Current Time: ${now.toLocaleTimeString()}`;
+}
 
+
+
+
+// Function to convert UTC reset time to user's local time
+function convertUTCToUserTimezone(resetTime) {
+    const now = new Date(); // Current date and time in user's timezone
+
+    // Get user's current timezone offset in minutes (including DST offset if applicable)
+    // const timezoneOffset = now.getTimezoneOffset();
+
+    // Parse reset time in UTC
+    const [hoursUTC, minutesUTC] = resetTime.split(':').map(Number);
+
+    // Create a new date object for the reset time in UTC
+    const resetDateUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hoursUTC, minutesUTC));
+
+    // Convert UTC time to user's local time
+    const resetTimeLocal = resetDateUTC.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    return resetTimeLocal;
+}
+
+
+// Prototype function to check if DST (Daylight Saving Time) is in effect
+Date.prototype.dst = function() {
+    const january = new Date(this.getFullYear(), 0, 1);
+    const july = new Date(this.getFullYear(), 6, 1);
+    return this.getTimezoneOffset() < Math.max(january.getTimezoneOffset(), july.getTimezoneOffset());
+};
+
+
+
+
+// Function to calculate the remaining time until the next reset in the user's timezone
+function calculateRemainingTime(currentTime, resetTimeLocal, resetDay = null) {
+    const now = currentTime; // Use the passed current time as the current time in the user's timezone
+
+    // Parse reset time in local timezone
+    const [hoursLocal, minutesLocal] = resetTimeLocal.split(':').map(Number);
+
+    // Create a new date object for today's date with reset time in local timezone
+    const resetDateLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hoursLocal, minutesLocal);
+
+    // Adjust for weekly timer if resetDay is provided
     if (resetDay !== null) {
-        // Weekly timer
-        resetDate.setDate(now.getDate() + ((resetDay + 7 - now.getDay()) % 7));
-    } else {
-        // Daily timer
-        resetDate.setDate(now.getDate());
+        resetDateLocal.setDate(resetDateLocal.getDate() + ((resetDay + 7 - resetDateLocal.getDay()) % 7));
     }
 
-    const [hours, minutes] = resetTime.split(':').map(Number); // Parse reset time
-    resetDate.setHours(hours, minutes, 0, 0);
-
-    if (resetDate <= now) {
+    // Calculate remaining time in milliseconds until the reset
+    let remainingTime = resetDateLocal - now;
+    if (remainingTime <= 0) {
         // If the reset time has already passed for today, set it for the next interval
         if (resetDay !== null) {
-            resetDate.setDate(resetDate.getDate() + 7);
+            resetDateLocal.setDate(resetDateLocal.getDate() + 7);
         } else {
-            resetDate.setDate(resetDate.getDate() + 1);
+            resetDateLocal.setDate(resetDateLocal.getDate() + 1);
         }
+        // Recalculate remaining time
+        remainingTime = resetDateLocal - now;
     }
 
-    const remainingTime = resetDate - now; // Calculate remaining time
-    const daysLeft = Math.floor(remainingTime / (1000 * 60 * 60 * 24)); // Calculate remaining days
-    const hoursLeft = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // Calculate remaining hours
-    const minutesLeft = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60)); // Calculate remaining minutes
-    const secondsLeft = Math.floor((remainingTime % (1000 * 60)) / 1000); // Calculate remaining seconds
+    // Calculate days, hours, minutes, and seconds left until the reset
+    const daysLeft = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+    remainingTime %= (1000 * 60 * 60 * 24);
+    const hoursLeft = Math.floor(remainingTime / (1000 * 60 * 60));
+    remainingTime %= (1000 * 60 * 60);
+    const minutesLeft = Math.floor(remainingTime / (1000 * 60));
+    remainingTime %= (1000 * 60);
+    const secondsLeft = Math.floor(remainingTime / 1000);
 
     return `${daysLeft}d ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`; // Format and return remaining time string
 }
+
+
+
+
+
+
+
+
 
 // Function to display timers
 function displayTimers() {
@@ -70,19 +134,29 @@ function displayTimers() {
         const timerDetails = document.createElement('p'); // Create timer details element
         let resetText; // Initialize reset text variable
         if (timer.interval === 'daily') { // Daily timer
-            resetText = `Resets daily at ${timer.resetTime}`; // Set reset text
+            const resetTimeInUserTimezone = convertUTCToUserTimezone(timer.resetTime); // Convert UTC reset time to user's timezone
+            resetText = `Resets daily at ${resetTimeInUserTimezone}`; // Set reset text
+            timerDetails.textContent = resetText; // Set timer details text
+            timerDiv.appendChild(timerDetails); // Append timer details to timer div
+
+            const remainingTime = calculateRemainingTime(new Date(), convertUTCToUserTimezone(timer.resetTime)); // Calculate remaining time in user's timezone
+            const timerRemaining = document.createElement('p'); // Create timer remaining element
+            timerRemaining.textContent = `Time remaining: ${remainingTime}`; // Set timer remaining text
+            timerRemaining.className = 'text-muted'; // Add Bootstrap class for muted text
+            timerDiv.appendChild(timerRemaining); // Append timer remaining to timer div
         } else if (timer.interval === 'weekly') { // Weekly timer
             const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; // Days of the week
-            resetText = `Resets every ${daysOfWeek[timer.resetDay]} at ${timer.resetTime}`; // Set reset text
-        }
-        timerDetails.textContent = resetText; // Set timer details text
-        timerDiv.appendChild(timerDetails); // Append timer details to timer div
+            const resetTimeInUserTimezone = convertUTCToUserTimezone(timer.resetTime); // Convert UTC reset time to user's timezone
+            resetText = `Resets every ${daysOfWeek[timer.resetDay]} at ${resetTimeInUserTimezone}`; // Set reset text
+            timerDetails.textContent = resetText; // Set timer details text
+            timerDiv.appendChild(timerDetails); // Append timer details to timer div
 
-        const timerRemaining = document.createElement('p'); // Create timer remaining element
-        const remainingTime = calculateRemainingTime(timer.resetTime, timer.resetDay); // Calculate remaining time
-        timerRemaining.textContent = `Time remaining: ${remainingTime}`; // Set timer remaining text
-        timerRemaining.className = 'text-muted'; // Add Bootstrap class for muted text
-        timerDiv.appendChild(timerRemaining); // Append timer remaining to timer div
+            const remainingTime = calculateRemainingTime(new Date(), convertUTCToUserTimezone(timer.resetTime), timer.resetDay); // Calculate remaining time in user's timezone
+            const timerRemaining = document.createElement('p'); // Create timer remaining element
+            timerRemaining.textContent = `Time remaining: ${remainingTime}`; // Set timer remaining text
+            timerRemaining.className = 'text-muted'; // Add Bootstrap class for muted text
+            timerDiv.appendChild(timerRemaining); // Append timer remaining to timer div
+        }
 
         container.appendChild(timerDiv); // Append timer div to container
     });
@@ -91,6 +165,7 @@ function displayTimers() {
 // Function to update timers every second
 function updateTimers() {
     displayTimers(); // Display timers
+    updateCurrentTime(); // Update current time with every timer update
     setTimeout(updateTimers, 1000); // Update every second
 }
 
