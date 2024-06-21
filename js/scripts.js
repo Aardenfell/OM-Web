@@ -2,14 +2,14 @@
 const timers = [
     {
         name: 'Daily Reset',
-        interval: 'daily',
-        resetTime: '00:00'
+        interval: 'daily', // Daily timer
+        resetTime: '00:00' // Reset time in 24-hour format
     },
     {
         name: 'Weekly Event A',
-        interval: 'weekly',
+        interval: 'weekly', // Weekly timer
         resetDay: 1, // Monday
-        resetTime: '12:00'
+        resetTime: '12:00' // Reset time in 24-hour format
     },
     {
         name: 'Weekly Event B',
@@ -22,8 +22,8 @@ const timers = [
 
 // Function to calculate the remaining time until the next reset
 function calculateRemainingTime(resetTime, resetDay = null) {
-    const now = new Date();
-    let resetDate = new Date();
+    const now = new Date(); // Current date and time
+    let resetDate = new Date(); // Reset date and time
 
     if (resetDay !== null) {
         // Weekly timer
@@ -33,7 +33,7 @@ function calculateRemainingTime(resetTime, resetDay = null) {
         resetDate.setDate(now.getDate());
     }
 
-    const [hours, minutes] = resetTime.split(':').map(Number);
+    const [hours, minutes] = resetTime.split(':').map(Number); // Parse reset time
     resetDate.setHours(hours, minutes, 0, 0);
 
     if (resetDate <= now) {
@@ -45,53 +45,54 @@ function calculateRemainingTime(resetTime, resetDay = null) {
         }
     }
 
-    const remainingTime = resetDate - now;
-    const daysLeft = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
-    const hoursLeft = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutesLeft = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-    const secondsLeft = Math.floor((remainingTime % (1000 * 60)) / 1000);
+    const remainingTime = resetDate - now; // Calculate remaining time
+    const daysLeft = Math.floor(remainingTime / (1000 * 60 * 60 * 24)); // Calculate remaining days
+    const hoursLeft = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // Calculate remaining hours
+    const minutesLeft = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60)); // Calculate remaining minutes
+    const secondsLeft = Math.floor((remainingTime % (1000 * 60)) / 1000); // Calculate remaining seconds
 
-    return `${daysLeft}d ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
+    return `${daysLeft}d ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`; // Format and return remaining time string
 }
 
 // Function to display timers
 function displayTimers() {
-    const container = document.getElementById('timers');
-    container.innerHTML = '';
+    const container = document.getElementById('timers'); // Get container element
+    container.innerHTML = ''; // Clear container
 
-    timers.forEach(timer => {
-        const timerDiv = document.createElement('div');
-        timerDiv.className = 'timer';
+    timers.forEach(timer => { // Iterate over timers
+        const timerDiv = document.createElement('div'); // Create timer div
+        timerDiv.className = 'timer'; // Set class name
         
-        const timerName = document.createElement('h2');
-        timerName.textContent = timer.name;
-        timerDiv.appendChild(timerName);
+        const timerName = document.createElement('h2'); // Create timer name element
+        timerName.textContent = timer.name; // Set timer name
+        timerDiv.appendChild(timerName); // Append timer name to timer div
 
-        const timerDetails = document.createElement('p');
-        let remainingTime;
-        if (timer.interval === 'daily') {
-            remainingTime = calculateRemainingTime(timer.resetTime);
-            timerDetails.textContent = `Resets daily at ${timer.resetTime} (${remainingTime})`;
-        } else if (timer.interval === 'weekly') {
-            remainingTime = calculateRemainingTime(timer.resetTime, timer.resetDay);
-            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            timerDetails.textContent = `Resets every ${daysOfWeek[timer.resetDay]} at ${timer.resetTime} (${remainingTime})`;
+        const timerDetails = document.createElement('p'); // Create timer details element
+        let remainingTime; // Initialize remaining time variable
+        if (timer.interval === 'daily') { // Daily timer
+            remainingTime = calculateRemainingTime(timer.resetTime); // Calculate remaining time
+            timerDetails.textContent = `Resets daily at ${timer.resetTime} (${remainingTime})`; // Set timer details
+        } else if (timer.interval === 'weekly') { // Weekly timer
+            remainingTime = calculateRemainingTime(timer.resetTime, timer.resetDay); // Calculate remaining time
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; // Days of the week
+            timerDetails.textContent = `Resets every ${daysOfWeek[timer.resetDay]} at ${timer.resetTime} (${remainingTime})`; // Set timer details
         }
 
-        timerDiv.appendChild(timerDetails);
-        container.appendChild(timerDiv);
+        timerDiv.appendChild(timerDetails); // Append timer details to timer div
+        container.appendChild(timerDiv); // Append timer div to container
     });
 }
 
 // Function to update timers every second
 function updateTimers() {
-    displayTimers();
+    displayTimers(); // Display timers
     setTimeout(updateTimers, 1000); // Update every second
 }
 
 // Function to initialize the page
 function init() {
-    updateTimers();
+    updateTimers(); // Update timers on page load
 }
 
-window.onload = init;
+window.onload = init; // Run init function on page load
+
