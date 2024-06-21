@@ -1,0 +1,43 @@
+# compiled python files
+__pycache__/
+*.py[cod]
+
+# build related
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# pip related
+.pip/
+pip-wheel-metadata/
+
+# virtual environment
+.venv/
+
+# editor related
+.idea/
+*.swp
+*.swo
+*.pyc
+
+# os generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# misc
+*.log
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.pem
+*.log
+*.pot
+*.mo
+*.po
+*-history
