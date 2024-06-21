@@ -61,24 +61,29 @@ function displayTimers() {
 
     timers.forEach(timer => { // Iterate over timers
         const timerDiv = document.createElement('div'); // Create timer div
-        timerDiv.className = 'timer'; // Set class name
+        timerDiv.className = 'timer col-md-4 mb-4'; // Set class name
         
         const timerName = document.createElement('h2'); // Create timer name element
         timerName.textContent = timer.name; // Set timer name
         timerDiv.appendChild(timerName); // Append timer name to timer div
 
         const timerDetails = document.createElement('p'); // Create timer details element
-        let remainingTime; // Initialize remaining time variable
+        let resetText; // Initialize reset text variable
         if (timer.interval === 'daily') { // Daily timer
-            remainingTime = calculateRemainingTime(timer.resetTime); // Calculate remaining time
-            timerDetails.textContent = `Resets daily at ${timer.resetTime} (${remainingTime})`; // Set timer details
+            resetText = `Resets daily at ${timer.resetTime}`; // Set reset text
         } else if (timer.interval === 'weekly') { // Weekly timer
-            remainingTime = calculateRemainingTime(timer.resetTime, timer.resetDay); // Calculate remaining time
             const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; // Days of the week
-            timerDetails.textContent = `Resets every ${daysOfWeek[timer.resetDay]} at ${timer.resetTime} (${remainingTime})`; // Set timer details
+            resetText = `Resets every ${daysOfWeek[timer.resetDay]} at ${timer.resetTime}`; // Set reset text
         }
-
+        timerDetails.textContent = resetText; // Set timer details text
         timerDiv.appendChild(timerDetails); // Append timer details to timer div
+
+        const timerRemaining = document.createElement('p'); // Create timer remaining element
+        const remainingTime = calculateRemainingTime(timer.resetTime, timer.resetDay); // Calculate remaining time
+        timerRemaining.textContent = `Time remaining: ${remainingTime}`; // Set timer remaining text
+        timerRemaining.className = 'text-muted'; // Add Bootstrap class for muted text
+        timerDiv.appendChild(timerRemaining); // Append timer remaining to timer div
+
         container.appendChild(timerDiv); // Append timer div to container
     });
 }
@@ -95,4 +100,3 @@ function init() {
 }
 
 window.onload = init; // Run init function on page load
-
