@@ -3,7 +3,8 @@
  */
 function updateCurrentTime() {
   const now = new Date(); // Get the current date and time
-  const currentTimeElement = document.getElementById("current-time"); // Get the element to display the current time
+  const currentTimeElement = document.getElementById("currentTime"); // Get the element to display the current time
+  currentTimeElement.className = "text-light";
   currentTimeElement.textContent = `Current Time: ${now.toLocaleTimeString()}`; // Set the text content of the element to display the current time
 }
 
