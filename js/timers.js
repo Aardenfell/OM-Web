@@ -9,7 +9,7 @@ const timers = [
   //     endTime: '22:00' // End time in 24-hour format. use if an event has a duration
   // },
   {
-    name: "Pills Reset",
+    name: "Daily Reset",
     interval: "daily", // Daily timer
     resetTime: "13:00", // Reset time in 24-hour format
   },
